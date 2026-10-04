@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حاسبة كتلة الجسم BMI</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f8f5;--card:#ffffff;--ink:#1b2b25;--mute:#5d726a;--line:#d6e4dc;--brand:#1f7a5c;--on-brand:#fff;
+--under:#3b82c4;--normal:#2e9e62;--over:#e0a21b;--obese:#d9534f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101a16;--card:#18251f;--ink:#e8f1ec;--mute:#9bb2a8;--line:#2a3d34;--brand:#4cc39a;--on-brand:#0c1a14}}
+:root[data-theme="dark"]{--bg:#101a16;--card:#18251f;--ink:#e8f1ec;--mute:#9bb2a8;--line:#2a3d34;--brand:#4cc39a;--on-brand:#0c1a14}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo',Tahoma,Arial,sans-serif;line-height:1.7;display:flex;justify-content:center;padding:20px 14px}
+main{width:100%;max-width:440px}
+h1{font-size:1.7rem;font-weight:800;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.seg{display:flex;gap:8px;margin-bottom:14px}
+.seg button{flex:1;padding:9px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;font:inherit;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand);font-weight:600}
+label{display:block;font-weight:600;margin:10px 0 4px}
+input{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:1.1rem;background:var(--bg);color:var(--ink)}
+input:focus,button:focus-visible{outline:3px solid var(--brand);outline-offset:1px}
+.go{width:100%;margin-top:16px;padding:13px;border:0;border-radius:12px;background:var(--brand);color:var(--on-brand);font:inherit;font-size:1.1rem;font-weight:800;cursor:pointer}
+.err{color:var(--obese);min-height:1.5em;margin:8px 0 0}
+#res{display:none;margin-top:16px}
+.val{font-size:3.2rem;font-weight:800;line-height:1.1}
+.cat{font-size:1.25rem;font-weight:800}
+.bar{position:relative;display:flex;height:14px;border-radius:7px;overflow:hidden;margin:18px 0 6px;direction:ltr}
+.bar i{display:block;height:100%}
+.pin{position:absolute;top:-4px;width:4px;height:22px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+.scale{display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);direction:ltr}
+.tip{margin-top:12px;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+.wt{margin:8px 0 0;color:var(--mute)}
+.note{font-size:.82rem;color:var(--mute);margin-top:16px}
+.who{text-align:center;margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.who strong{font-size:1.2rem;font-weight:800}
+.book{color:var(--mute);margin-top:6px}
+.acts{display:flex;gap:8px;margin-top:10px}
+.btn{flex:1;padding:11px 8px;border-radius:12px;background:var(--brand);color:var(--on-brand);text-decoration:none;font-weight:800}
+.btn.wa{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>حاسبة كتلة الجسم BMI</h1>
+<p class="sub">اعرفي أو اعرف وزنك مناسب لطولك في ثواني.</p>
+<div class="card">
+  <div class="seg" role="group" aria-label="وحدة القياس">
+    <button type="button" id="u-m" aria-pressed="true">كجم / سم</button>
+    <button type="button" id="u-i" aria-pressed="false">رطل / بوصة</button>
+  </div>
+  <label for="w" id="wl">الوزن (كجم)</label>
+  <input id="w" type="number" inputmode="decimal" min="1" step="any" placeholder="مثال: 70">
+  <label for="h" id="hl">الطول (سم)</label>
+  <input id="h" type="number" inputmode="decimal" min="1" step="any" placeholder="مثال: 165">
+  <button class="go" id="calc" type="button">احسب</button>
+  <p class="err" id="err" role="alert"></p>
+  <div id="res" aria-live="polite">
+    <div class="val" id="v"></div>
+    <div class="cat" id="c"></div>
+    <div class="bar" aria-hidden="true">
+      <i style="width:25%;background:var(--under)"></i><i style="width:25%;background:var(--normal)"></i><i style="width:25%;background:var(--over)"></i><i style="width:25%;background:var(--obese)"></i>
+      <span class="pin" id="pin"></span>
+    </div>
+    <div class="scale"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+    <div class="tip" id="t"></div>
+    <p class="wt" id="rng"></p>
+  </div>
+</div>
+<section class="who">
+  <strong>د. عزة لطفي</strong>
+  <div>أخصائية التغذية العلاجية ومدرب تغذية شمولية معتمد</div>
+  <div class="book">للحجز والاستفسار</div>
+  <div class="acts">
+    <a class="btn" href="tel:+201014068601" dir="ltr">اتصال 01014068601</a>
+    <a class="btn wa" href="https://wa.me/201014068601" target="_blank" rel="noopener">واتساب</a>
+  </div>
+  <div class="acts">
+    <a class="btn wa" href="https://www.facebook.com/profile.php?id=61564304697575" target="_blank" rel="noopener">تابعي صفحتي على فيسبوك</a>
+  </div>
+</section>
+<p class="note">المؤشر تقدير عام ولا يغني عن التقييم الغذائي. قد لا يناسب الحوامل والرياضيين وكبار السن والأطفال. استشيري مختصة قبل أي نظام غذائي.</p>
+</main>
+<script>
+var metric=true,$=function(i){return document.getElementById(i)};
+function setU(m){metric=m;$('u-m').setAttribute('aria-pressed',m);$('u-i').setAttribute('aria-pressed',!m);
+$('wl').textContent=m?'الوزن (كجم)':'الوزن (رطل)';$('hl').textContent=m?'الطول (سم)':'الطول (بوصة)';
+$('w').placeholder=m?'مثال: 70':'مثال: 154';$('h').placeholder=m?'مثال: 165':'مثال: 65';$('res').style.display='none'}
+$('u-m').onclick=function(){setU(true)};$('u-i').onclick=function(){setU(false)};
+var cats=[
+{max:18.5,n:'نحافة',col:'--under',t:'وزنك أقل من المعدل. الأفضل تراجعي أخصائية تغذية لتقييم السبب ووضع خطة لزيادة الوزن بشكل صحي.'},
+{max:25,n:'وزن طبيعي',col:'--normal',t:'وزنك في المعدل الصحي. حافظي على غذاء متوازن ونشاط بدني منتظم.'},
+{max:30,n:'زيادة في الوزن',col:'--over',t:'عندك زيادة بسيطة. تعديلات صغيرة في الأكل والحركة تعمل فرق كبير مع الوقت.'},
+{max:Infinity,n:'سمنة',col:'--obese',t:'المؤشر في نطاق السمنة. يُفضل عمل تقييم غذائي وخطة علاجية مناسبة لحالتك.'}];
+function calc(){
+var w=parseFloat($('w').value),h=parseFloat($('h').value),e=$('err');e.textContent='';
+if(!(w>0)||!(h>0)){e.textContent='اكتب الوزن والطول بأرقام صحيحة.';$('res').style.display='none';return}
+var kg=metric?w:w*0.45359237,m=metric?h/100:h*0.0254;
+if(m<0.5||m>2.6||kg<10||kg>500){e.textContent='القيم خارج المدى المعقول. راجع الوحدات والأرقام.';$('res').style.display='none';return}
+var b=kg/(m*m),c=cats.filter(function(x){return b<x.max})[0];
+$('v').textContent=b.toFixed(1);$('v').style.color='var('+c.col+')';
+$('c').textContent=c.n;$('t').textContent=c.t;
+var p=Math.min(Math.max((b-15)/(40-15),0),1)*100;
+var lo=18.5*m*m,hi=24.9*m*m;
+$('pin').style.left=p+'%';
+var u=metric?1:1/0.45359237,un=metric?'كجم':'رطل';
+$('rng').textContent='الوزن المناسب لطولك: من '+Math.round(lo*u)+' إلى '+Math.round(hi*u)+' '+un+'.';
+$('res').style.display='block'}
+$('calc').onclick=calc;
+[$('w'),$('h')].forEach(function(i){i.addEventListener('keydown',function(e){if(e.key==='Enter')calc()})});
+</script>
+</body>
+</html>
